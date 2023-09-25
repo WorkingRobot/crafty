@@ -32,7 +32,7 @@ fn get_player_clvl(player_job_level: u32) -> Option<u32> {
     } else {
         Some(match player_job_level {
             51 => 120,
-            52 => 125, // source has this as 53, too. is this a typo?
+            52 => 125,
             53 => 130,
             54 => 133,
             55 => 136,
