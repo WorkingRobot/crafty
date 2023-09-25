@@ -2,7 +2,6 @@ use crate::CraftState;
 use enum_indexing::EnumIndexing;
 use serde::Serialize;
 use std::{cmp, fmt};
-use ts_type::{wasm_bindgen, TsType};
 
 pub struct Attributes {
     pub level: u32,
@@ -34,7 +33,7 @@ macro_rules! create_actions {
                 $(effect $effect:expr,)?
         )+ $(,)?
     ) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, EnumIndexing, TsType)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, EnumIndexing)]
         pub enum Action {
             $($action_name,)*
         }

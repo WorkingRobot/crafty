@@ -114,7 +114,7 @@ impl ActionSet {
     pub fn to_vec(&self) -> Vec<Action> {
         let mut actions = vec![];
 
-        for action in Action::ACTIONS.iter() {
+        for action in Action::ACTIONS {
             if self.contains(*action) {
                 actions.push(*action);
             }

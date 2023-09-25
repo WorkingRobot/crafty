@@ -1,7 +1,6 @@
 use crate::{action::Attributes, Action, ActionSet, CraftContext};
 use serde::Serialize;
 use std::{cmp, fmt};
-use ts_type::{wasm_bindgen, TsType};
 
 #[derive(Debug)]
 pub enum CraftResult {
@@ -15,7 +14,7 @@ pub enum CraftResult {
     InvalidActionFailure,
 }
 
-#[derive(Default, Debug, Clone, Serialize, TsType)]
+#[derive(Default, Debug, Clone, Serialize)]
 pub struct Buffs {
     pub inner_quiet: u8,
     pub waste_not: u8,

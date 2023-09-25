@@ -7,8 +7,8 @@ mod action;
 mod action_set;
 mod craft_context;
 mod craft_state;
-pub mod data;
 mod player;
+mod recipe;
 mod simulator;
 mod tree;
 

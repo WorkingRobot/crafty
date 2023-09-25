@@ -1,9 +1,8 @@
 use crate::{tree::Arena, Action, CraftContext, CraftResult, CraftState};
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 use serde::Deserialize;
-use ts_type::{wasm_bindgen, TsType};
 
-#[derive(Clone, Copy, Deserialize, TsType)]
+#[derive(Clone, Copy, Deserialize)]
 pub struct SearchOptions {
     /// Number of simulations to run
     pub iterations: u32,

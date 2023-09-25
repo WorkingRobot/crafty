@@ -1,6 +1,5 @@
-use crate::{data, Action, ActionSet, Player, Recipe};
+use crate::{Action, ActionSet, Player, Recipe};
 use serde::Deserialize;
-use ts_type::{wasm_bindgen, TsType};
 
 #[derive(Debug, Clone)]
 pub struct CraftContext {
@@ -20,11 +19,15 @@ pub struct CraftContext {
     pub action_pool: ActionSet,
 }
 
-#[derive(Debug, Clone, Copy, Default, Deserialize, TsType)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 pub struct CraftOptions {
     pub max_steps: u8,
     pub starting_quality: Option<u32>,
     pub quality_target: Option<u32>,
+}
+
+fn get_player_clvl(_player_job_level: u32) -> Option<u32> {
+    unimplemented!()
 }
 
 impl CraftContext {
@@ -38,7 +41,7 @@ impl CraftContext {
         let quality_div = recipe.quality_div as f32;
         let mut quality_factor: f32 = (player.control * 10) as f32 / quality_div + 35.0;
 
-        if let Some(&base_recipe_level) = data::base_recipe_level(player.job_level) {
+        if let Some(base_recipe_level) = get_player_clvl(player.job_level) {
             if base_recipe_level <= recipe.recipe_level {
                 progress_factor *= recipe.progress_mod as f32 / 100.0;
                 quality_factor *= recipe.quality_mod as f32 / 100.0;
