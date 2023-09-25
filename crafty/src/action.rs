@@ -1,6 +1,5 @@
 use crate::CraftState;
 use enum_indexing::EnumIndexing;
-use serde::Serialize;
 use std::{cmp, fmt};
 
 pub struct Attributes {
@@ -33,7 +32,7 @@ macro_rules! create_actions {
                 $(effect $effect:expr,)?
         )+ $(,)?
     ) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, EnumIndexing)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIndexing)]
         pub enum Action {
             $($action_name,)*
         }

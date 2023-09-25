@@ -1,9 +1,8 @@
-use serde::{Deserialize, Serialize};
 use std::fmt;
 
 // Must be separate from the `crafty` crate so it can be used in the build script
 
-#[derive(Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Recipe {
     pub recipe_level: u32,
     pub job_level: u32,

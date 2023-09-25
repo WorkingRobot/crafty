@@ -1,6 +1,5 @@
 use crafty::{Action, CraftContext, CraftOptions, Player, Recipe, SearchOptions, Simulator};
 use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion};
-use pprof::criterion::{Output, PProfProfiler};
 use std::time::Duration;
 use Action::*;
 
@@ -64,7 +63,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
 criterion_group!(
     name = benches;
-    config = Criterion::default().with_profiler(PProfProfiler::new(997, Output::Flamegraph(None)));
+    config = Criterion::default();
     targets = criterion_benchmark
 );
 criterion_main!(benches);

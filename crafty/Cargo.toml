@@ -8,11 +8,9 @@ edition = "2021"
 [dependencies]
 enum_indexing = { path = "enum_indexing" }
 rand = { version = "0.8.5", features = ["small_rng"] }
-serde = { version = "1.0.132", features = ["derive"] }
 
 [dev-dependencies]
-criterion = { version = "0.3", features = ["html_reports"] }
-pprof = { version = "0.7", features = ["criterion", "flamegraph"] }
+criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [[bench]]
 name = "benchmark"
