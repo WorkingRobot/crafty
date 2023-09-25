@@ -1,6 +1,5 @@
 use crate::CraftState;
 use enumflags2::bitflags;
-use serde::Serialize;
 use std::{cmp, fmt};
 
 pub struct Attributes {
@@ -35,7 +34,7 @@ macro_rules! create_actions {
     ) => {
         #[bitflags]
         #[repr(u32)]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
         pub enum Action {
             $($action_name,)*
         }

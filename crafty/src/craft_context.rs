@@ -1,5 +1,4 @@
 use crate::{Action, ActionSet, Player, Recipe};
-use serde::Deserialize;
 
 #[derive(Debug, Clone)]
 pub struct CraftContext {
@@ -19,7 +18,7 @@ pub struct CraftContext {
     pub action_pool: ActionSet,
 }
 
-#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct CraftOptions {
     pub max_steps: u8,
     pub starting_quality: Option<u32>,

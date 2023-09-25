@@ -1,5 +1,4 @@
 use crate::{action::Attributes, Action, ActionSet, CraftContext};
-use serde::Serialize;
 use std::{cmp, fmt};
 
 #[derive(Debug)]
@@ -14,7 +13,7 @@ pub enum CraftResult {
     InvalidActionFailure,
 }
 
-#[derive(Default, Debug, Clone, Serialize)]
+#[derive(Default, Debug, Clone)]
 pub struct Buffs {
     pub inner_quiet: u8,
     pub waste_not: u8,
