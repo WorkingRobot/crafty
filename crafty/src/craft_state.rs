@@ -1,4 +1,4 @@
-use crate::{action::Attributes, Action, ActionSet, CraftContext};
+use crate::{action::Attributes, Action, ActionSet, BitFlagExt, CraftContext};
 use std::{cmp, fmt};
 
 #[derive(Debug)]
@@ -106,7 +106,7 @@ impl<'a> CraftState<'a> {
             score_sum: 0.0,
             max_score: 0.0,
             visits: 0.0,
-            available_moves: ActionSet::new(),
+            available_moves: ActionSet::default(),
         }
     }
 
@@ -163,11 +163,11 @@ impl<'a> CraftState<'a> {
                     && !self.context.is_expert
                     && self.context.action_pool.contains(TrainedEye)
                 {
-                    return action == &TrainedEye;
+                    return action == TrainedEye;
                 }
 
                 // only allow Focused moves after Observe
-                if self.observe && action != &FocusedSynthesis && action != &FocusedTouch {
+                if self.observe && action != FocusedSynthesis && action != FocusedTouch {
                     return false;
                 }
 
@@ -273,7 +273,7 @@ impl<'a> CraftState<'a> {
             score_sum: 0.0,
             max_score: 0.0,
             visits: 0.0,
-            available_moves: ActionSet::new(),
+            available_moves: ActionSet::default(),
             ..*self
         };
 

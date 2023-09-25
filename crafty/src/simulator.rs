@@ -1,4 +1,4 @@
-use crate::{tree::Arena, Action, CraftContext, CraftResult, CraftState};
+use crate::{tree::Arena, Action, BitFlagExt, CraftContext, CraftResult, CraftState};
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
 #[derive(Clone, Copy)]
@@ -93,7 +93,7 @@ impl<'a> Simulator<'a> {
 
             // the next action must be available to use
             if current_state.available_moves.contains(action) {
-                current_state.available_moves.unset(action);
+                current_state.available_moves.remove(action);
             } else {
                 return (current_index, Some(CraftResult::InvalidActionFailure));
             }
@@ -124,7 +124,7 @@ impl<'a> Simulator<'a> {
 
             // the next action must be available to use
             if current_state.available_moves.contains(action) {
-                current_state.available_moves.unset(action);
+                current_state.available_moves.remove(action);
             } else {
                 return (current_index, Some(CraftResult::InvalidActionFailure));
             }

@@ -97,7 +97,7 @@ impl CraftContext {
     }
 
     fn determine_action_pool(player: &Player, recipe: &Recipe) -> ActionSet {
-        let mut pool = ActionSet::new();
+        let mut pool = ActionSet::default();
 
         for action in Action::ACTIONS {
             let attrs = action.attributes();
@@ -108,20 +108,20 @@ impl CraftContext {
                     continue;
                 }
 
-                pool.set(*action);
+                pool.insert(*action);
             }
         }
 
         {
             use Action::*;
             if pool.contains(BasicSynthesisTraited) && pool.contains(BasicSynthesis) {
-                pool.unset(BasicSynthesis);
+                pool.remove(BasicSynthesis);
             }
             if pool.contains(CarefulSynthesisTraited) && pool.contains(CarefulSynthesis) {
-                pool.unset(CarefulSynthesis);
+                pool.remove(CarefulSynthesis);
             }
             if pool.contains(GroundworkTraited) && pool.contains(Groundwork) {
-                pool.unset(Groundwork);
+                pool.remove(Groundwork);
             }
         }
 

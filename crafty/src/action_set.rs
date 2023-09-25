@@ -1,84 +1,35 @@
-use enumflags2::BitFlags;
+use enumflags2::{BitFlag, BitFlags};
 use rand::{rngs::SmallRng, Rng};
 
 use crate::Action;
 
-#[derive(Debug, Default, Clone)]
-pub struct ActionSet(BitFlags<Action>);
+pub type ActionSet = BitFlags<Action>;
 
-impl ActionSet {
-    pub fn set(&mut self, action: Action) {
-        self.0.insert(action)
-    }
+pub trait BitFlagExt<T: BitFlag> {
+    fn keep<F: Fn(T) -> bool>(&mut self, f: F);
 
-    pub fn unset(&mut self, action: Action) {
-        self.0.remove(action)
-    }
+    fn sample(&self, rng: &mut SmallRng) -> T;
 
-    pub fn new() -> Self {
-        Self::default()
-    }
+    fn pick(&mut self, rng: &mut SmallRng) -> T;
+}
 
-    pub fn from_vec(actions: &Vec<Action>) -> Self {
-        let mut instance = Self::new();
-
-        for action in actions {
-            instance.set(*action);
-        }
-
-        instance
-    }
-
-    pub fn contains(&self, action: Action) -> bool {
-        self.0.contains(action)
-    }
-
-    /// Iterates through Actions in the set and keeps or removes them based on
-    /// the closure `f` provided.
-    ///
-    /// Similar to Vec's retain method.
-    pub fn keep<F>(&mut self, mut f: F)
-    where
-        F: FnMut(&Action) -> bool,
-    {
-        for action in self.0 {
-            if !f(&action) {
-                self.unset(action);
+impl<T: BitFlag> BitFlagExt<T> for BitFlags<T> {
+    fn keep<F: Fn(T) -> bool>(&mut self, f: F) {
+        for item in self.iter() {
+            if !f(item) {
+                self.remove(item);
             }
         }
     }
 
-    /// Returns a random Action from the set
-    pub fn sample(&self, rng: &mut SmallRng) -> Action {
-        let n = rng.gen_range(0..self.len());
-        self.0.iter().nth(n as usize).unwrap()
+    fn sample(&self, rng: &mut SmallRng) -> T {
+        self.iter().nth(rng.gen_range(0..self.len())).unwrap()
     }
 
-    /// Removes and returns a random Action from the set
-    pub fn pick(&mut self, rng: &mut SmallRng) -> Action {
+    fn pick(&mut self, rng: &mut SmallRng) -> T {
         let ret = self.sample(rng);
-        self.unset(ret);
+        self.remove(ret);
         ret
-    }
-
-    pub fn len(&self) -> u32 {
-        self.0.len() as u32
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-
-    pub fn to_vec(&self) -> Vec<Action> {
-        let mut actions = vec![];
-
-        for action in Action::ACTIONS {
-            if self.contains(*action) {
-                actions.push(*action);
-            }
-        }
-
-        actions
     }
 }
 
@@ -90,26 +41,26 @@ mod tests {
 
     #[test]
     fn set_and_unset_works() {
-        let mut set = ActionSet::new();
+        let mut set = ActionSet::default();
 
-        set.set(BasicTouch);
-        set.set(BasicSynthesis);
+        set.insert(BasicTouch);
+        set.insert(BasicSynthesis);
         assert_eq!(set.len(), 2);
 
-        set.unset(BasicTouch);
-        set.unset(BasicSynthesis);
+        set.remove(BasicTouch);
+        set.remove(BasicSynthesis);
         assert!(set.is_empty());
     }
 
     #[test]
     fn keep_works() {
-        let mut set = ActionSet::new();
-        set.set(BasicTouch);
-        set.set(BasicSynthesis);
-        set.set(GreatStrides);
-        set.set(MuscleMemory);
+        let mut set = ActionSet::default();
+        set.insert(BasicTouch);
+        set.insert(BasicSynthesis);
+        set.insert(GreatStrides);
+        set.insert(MuscleMemory);
 
-        set.keep(|action| *action != BasicTouch && *action != GreatStrides);
+        set.keep(|action| action != BasicTouch && action != GreatStrides);
         assert_eq!(set.len(), 2);
         assert!(set.contains(BasicSynthesis));
         assert!(set.contains(MuscleMemory));
@@ -117,11 +68,11 @@ mod tests {
 
     #[test]
     fn random_index_works() {
-        let mut set = ActionSet::new();
-        set.set(BasicTouch);
-        set.set(BasicSynthesis);
-        set.set(GreatStrides);
-        set.set(TrainedFinesse);
+        let mut set = ActionSet::default();
+        set.insert(BasicTouch);
+        set.insert(BasicSynthesis);
+        set.insert(GreatStrides);
+        set.insert(TrainedFinesse);
 
         let mut counts = vec![0; Action::ACTIONS.len()];
         let mut rng = SmallRng::seed_from_u64(1);

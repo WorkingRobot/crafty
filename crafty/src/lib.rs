@@ -13,7 +13,7 @@ mod simulator;
 mod tree;
 
 pub use action::Action;
-use action_set::ActionSet;
+use action_set::{ActionSet, BitFlagExt};
 pub use craft_context::{CraftContext, CraftOptions};
 pub use craft_state::{Buffs, CraftResult, CraftState};
 pub use player::Player;
