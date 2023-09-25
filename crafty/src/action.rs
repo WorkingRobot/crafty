@@ -1,5 +1,5 @@
 use crate::CraftState;
-use enum_indexing::EnumIndexing;
+use enumflags2::bitflags;
 use serde::Serialize;
 use std::{cmp, fmt};
 
@@ -33,7 +33,9 @@ macro_rules! create_actions {
                 $(effect $effect:expr,)?
         )+ $(,)?
     ) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, EnumIndexing)]
+        #[bitflags]
+        #[repr(u32)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
         pub enum Action {
             $($action_name,)*
         }

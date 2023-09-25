@@ -26,8 +26,54 @@ pub struct CraftOptions {
     pub quality_target: Option<u32>,
 }
 
-fn get_player_clvl(_player_job_level: u32) -> Option<u32> {
-    unimplemented!()
+fn get_player_clvl(player_job_level: u32) -> Option<u32> {
+    if player_job_level <= 50 {
+        None
+    } else {
+        Some(match player_job_level {
+            51 => 120,
+            52 => 125, // source has this as 53, too. is this a typo?
+            53 => 130,
+            54 => 133,
+            55 => 136,
+            56 => 139,
+            57 => 142,
+            58 => 145,
+            59 => 148,
+            60 => 150,
+            61 => 260,
+            62 => 265,
+            63 => 270,
+            64 => 273,
+            65 => 276,
+            66 => 279,
+            67 => 282,
+            68 => 285,
+            69 => 288,
+            70 => 290,
+            71 => 390,
+            72 => 395,
+            73 => 400,
+            74 => 403,
+            75 => 406,
+            76 => 409,
+            77 => 412,
+            78 => 415,
+            79 => 418,
+            80 => 420,
+            81 => 517,
+            82 => 520,
+            83 => 525,
+            84 => 530,
+            85 => 535,
+            86 => 540,
+            87 => 545,
+            88 => 550,
+            89 => 555,
+            90 => 560,
+            _ => unimplemented!(),
+        })
+    }
 }
 
 impl CraftContext {
