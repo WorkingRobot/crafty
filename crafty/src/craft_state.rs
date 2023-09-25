@@ -22,7 +22,6 @@ pub struct Buffs {
     pub great_strides: u8,
     pub innovation: u8,
     pub veneration: u8,
-    pub makers_mark: u8,
     pub muscle_memory: u8,
 }
 
@@ -40,7 +39,6 @@ impl Buffs {
         self.great_strides = self.great_strides.saturating_sub(1);
         self.innovation = self.innovation.saturating_sub(1);
         self.veneration = self.veneration.saturating_sub(1);
-        self.makers_mark = self.makers_mark.saturating_sub(1);
         self.muscle_memory = self.muscle_memory.saturating_sub(1);
     }
 }
@@ -69,7 +67,7 @@ pub struct CraftState<'a> {
     /// Maximum score that can be obtained by following this node
     pub max_score: f32,
     /// Number of times this node has been visited
-    pub visits: f32,
+    pub visits: u32,
     pub available_moves: ActionSet,
 }
 
@@ -105,7 +103,7 @@ impl<'a> CraftState<'a> {
             action: None,
             score_sum: 0.0,
             max_score: 0.0,
-            visits: 0.0,
+            visits: 0,
             available_moves: ActionSet::new(),
         }
     }
@@ -272,7 +270,7 @@ impl<'a> CraftState<'a> {
             action: Some(*action),
             score_sum: 0.0,
             max_score: 0.0,
-            visits: 0.0,
+            visits: 0,
             available_moves: ActionSet::new(),
             ..*self
         };
@@ -335,19 +333,10 @@ impl<'a> CraftState<'a> {
         state
     }
 
-    /// Executes the action against a `CraftState`, and returns a `CraftState` with
-    /// all available moves
-    pub fn execute(&self, action: &Action) -> Self {
+    /// Executes the action against a `CraftState`, and returns a new `CraftState`
+    pub fn execute(&self, action: &Action, strict: bool) -> Self {
         let mut state = self._execute(action);
-        state.set_available_moves(false);
-        state
-    }
-
-    /// Executes the action against a `CraftState`, and returns a `CraftState` with
-    /// a strict, pruned moveset
-    pub fn execute_strict(&self, action: &Action) -> Self {
-        let mut state = self._execute(action);
-        state.set_available_moves(true);
+        state.set_available_moves(strict);
         state
     }
 

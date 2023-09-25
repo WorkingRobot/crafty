@@ -40,10 +40,6 @@ pub struct Simulator<'a> {
     score_storage_threshold: f32,
     max_score_weighting_constant: f32,
     exploration_constant: f32,
-
-    /// Amount of "dead ends" encountered. This means a node was selected, but
-    /// there weren't any available moves.
-    dead_ends_selected: u64,
 }
 
 impl<'a> Simulator<'a> {
@@ -54,7 +50,6 @@ impl<'a> Simulator<'a> {
         Self {
             tree: Arena::new(state),
             iterations: options.iterations,
-            dead_ends_selected: 0,
             rng: SmallRng::seed_from_u64(u64::from(rng_seed)),
             score_storage_threshold: options
                 .score_storage_threshold
@@ -82,6 +77,7 @@ impl<'a> Simulator<'a> {
         &mut self,
         start_index: usize,
         actions: Vec<Action>,
+        strict: bool,
     ) -> (usize, Option<CraftResult>) {
         let mut current_index = start_index;
         for action in actions {
@@ -98,40 +94,8 @@ impl<'a> Simulator<'a> {
                 return (current_index, Some(CraftResult::InvalidActionFailure));
             }
 
-            let next_state = current_state.execute(&action);
+            let next_state = current_state.execute(&action, strict);
             let next_index = self.tree.insert(current_index, next_state);
-            current_index = next_index;
-        }
-
-        // check state after performing the last action
-        let current_state = &mut self.tree.get_mut(current_index).state;
-        (current_index, current_state.check_result())
-    }
-
-    /// Executes a series of actions with strict move pruning enabled.
-    fn execute_actions_strict(
-        &mut self,
-        start_index: usize,
-        actions: Vec<Action>,
-    ) -> (usize, Option<CraftResult>) {
-        let mut current_index = start_index;
-        for action in actions {
-            let current_state = &mut self.tree.get_mut(current_index).state;
-
-            if let Some(result) = current_state.check_result() {
-                return (current_index, Some(result));
-            }
-
-            // the next action must be available to use
-            if current_state.available_moves.contains(action) {
-                current_state.available_moves.unset(action);
-            } else {
-                return (current_index, Some(CraftResult::InvalidActionFailure));
-            }
-
-            let next_state = current_state.execute_strict(&action);
-            let next_index = self.tree.insert(current_index, next_state);
-
             current_index = next_index;
         }
 
@@ -145,11 +109,11 @@ impl<'a> Simulator<'a> {
         let w = self.max_score_weighting_constant;
         let c = self.exploration_constant;
 
-        let visits = state.visits;
+        let visits = state.visits as f32;
         let average_score = state.score_sum / visits;
 
         let exploitation = (1.0 - w) * average_score + w * state.max_score;
-        let exploration = (c * parent_state.visits.ln() / visits).sqrt();
+        let exploration = (c * (parent_state.visits as f32).ln() / visits).sqrt();
 
         exploitation + exploration
     }
@@ -191,7 +155,7 @@ impl<'a> Simulator<'a> {
             return (initial_index, result);
         }
         let random_action = initial_state.available_moves.pick(&mut self.rng);
-        let expanded_state = initial_state.execute_strict(&random_action);
+        let expanded_state = initial_state.execute(&random_action, true);
         let expanded_index = self.tree.insert(initial_index, expanded_state);
 
         // playout to a terminal state
@@ -203,7 +167,7 @@ impl<'a> Simulator<'a> {
             }
             let random_action = current_state.available_moves.sample(&mut self.rng);
             action_history.push(random_action);
-            current_state = current_state.execute_strict(&random_action);
+            current_state = current_state.execute(&random_action, true);
         };
 
         // store the result if a max score was reached
@@ -213,7 +177,7 @@ impl<'a> Simulator<'a> {
                     && score >= self.tree.nodes[0].state.max_score =>
             {
                 let (terminal_index, _) =
-                    self.execute_actions_strict(expanded_index, action_history);
+                    self.execute_actions(expanded_index, action_history, true);
                 (terminal_index, result)
             }
             _ => (expanded_index, result),
@@ -227,7 +191,7 @@ impl<'a> Simulator<'a> {
         loop {
             // Mutate current node stats
             let current_node = self.tree.get_mut(current_index);
-            current_node.state.visits += 1.0;
+            current_node.state.visits += 1;
             current_node.state.score_sum += score;
             current_node.state.max_score = current_node.state.max_score.max(score);
 
@@ -244,10 +208,6 @@ impl<'a> Simulator<'a> {
         for _ in 0..self.iterations {
             let selected_index = self.select(start_index);
             let (end_index, result) = self.expand_and_rollout(selected_index);
-
-            if selected_index == end_index {
-                self.dead_ends_selected += 1;
-            }
 
             let score = match result {
                 CraftResult::Finished(s) => s,
@@ -289,7 +249,7 @@ impl<'a> Simulator<'a> {
         actions: Vec<Action>,
     ) -> (CraftState<'a>, Option<CraftResult>) {
         let mut sim = Self::from_context(context, SearchOptions::default());
-        let (index, result) = sim.execute_actions(0, actions);
+        let (index, result) = sim.execute_actions(0, actions, false);
         (sim.tree.get(index).state.clone(), result)
     }
 
@@ -323,7 +283,7 @@ impl<'a> Simulator<'a> {
             }
 
             let chosen_action = solution_actions[0];
-            state = state.execute_strict(&chosen_action);
+            state = state.execute(&chosen_action, true);
             actions.push(chosen_action);
 
             if let Some(action_callback) = action_callback {

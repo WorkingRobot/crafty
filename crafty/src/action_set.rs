@@ -1,7 +1,7 @@
 use enum_indexing::EnumIndexing;
 use rand::{rngs::SmallRng, Rng};
 
-use crate::Action;
+use crate::{intrinsics, Action};
 
 #[derive(Debug, Default, Clone)]
 pub struct ActionSet(u32);
@@ -71,23 +71,8 @@ impl ActionSet {
 
     fn random_index(&self, rng: &mut SmallRng) -> usize {
         // inspired by https://stackoverflow.com/a/37460774
-        let mut nth = rng.gen_range(0..self.len());
-        let mut remaining_bits = self.0;
-
-        while remaining_bits != 0 {
-            let index = (32 - remaining_bits.leading_zeros() - 1) as usize;
-
-            if nth == 0 {
-                return index;
-            }
-
-            let bit = 1u32 << index;
-
-            nth -= 1;
-            remaining_bits &= !bit;
-        }
-
-        panic!("called `random` on empty ActionSet");
+        let nth = rng.gen_range(0..self.len());
+        intrinsics::nth_bit_set(self.0, nth) as usize
     }
 
     /// Returns a random Action from the set
