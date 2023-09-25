@@ -3,7 +3,7 @@ use enum_indexing::EnumIndexing;
 use std::{cmp, fmt};
 
 pub struct Attributes {
-    pub level: u32,
+    pub level: u8,
     pub progress_efficiency: Option<f32>,
     pub quality_efficiency: Option<f32>,
     pub durability_cost: Option<i8>,

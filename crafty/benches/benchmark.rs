@@ -5,16 +5,15 @@ use Action::*;
 
 fn setup_sim(rng_seed: Option<u32>) -> (CraftContext, SearchOptions) {
     let recipe = Recipe {
-        recipe_level: 560,
-        job_level: 90,
-        stars: 0,
-        progress: 3500,
-        quality: 7200,
-        durability: 80,
-        progress_div: 130,
-        progress_mod: 90,
-        quality_div: 115,
-        quality_mod: 80,
+        rlvl: 560,
+        level: 90,
+        progress_max: 3500,
+        quality_max: 7200,
+        durability_max: 80,
+        progress_divider: 130,
+        progress_modifier: 90,
+        quality_divider: 115,
+        quality_modifier: 80,
         is_expert: false,
         conditions_flag: 15,
     };
