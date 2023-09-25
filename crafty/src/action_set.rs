@@ -1,11 +1,12 @@
+use enumflags2::_internal::RawBitFlags;
 use enumflags2::{BitFlag, BitFlags};
 use rand::{rngs::SmallRng, Rng};
 
-use crate::Action;
+use crate::{intrinsics, Action};
 
 pub type ActionSet = BitFlags<Action>;
 
-pub trait BitFlagExt<T: BitFlag> {
+pub trait BitFlagExt<T: BitFlag>: BitFlagNth<T> {
     fn keep<F: Fn(T) -> bool>(&mut self, f: F);
 
     fn sample(&self, rng: &mut SmallRng) -> T;
@@ -13,7 +14,25 @@ pub trait BitFlagExt<T: BitFlag> {
     fn pick(&mut self, rng: &mut SmallRng) -> T;
 }
 
-impl<T: BitFlag> BitFlagExt<T> for BitFlags<T> {
+pub trait BitFlagNth<T: BitFlag> {
+    fn nth(&self, idx: u32) -> T;
+}
+
+impl<T: BitFlag + RawBitFlags<Numeric = u32>> BitFlagNth<T> for BitFlags<T, u32> {
+    fn nth(&self, idx: u32) -> T {
+        let flag = 1u32 << intrinsics::nth_bit_set_32(self.bits(), idx);
+        unsafe { core::mem::transmute_copy(&flag) }
+    }
+}
+
+impl<T: BitFlag + RawBitFlags<Numeric = u64>> BitFlagNth<T> for BitFlags<T, u64> {
+    fn nth(&self, idx: u32) -> T {
+        let flag = 1u64 << intrinsics::nth_bit_set_64(self.bits(), idx);
+        unsafe { core::mem::transmute_copy(&flag) }
+    }
+}
+
+impl<T: BitFlag + RawBitFlags<Numeric = u32>> BitFlagExt<T> for BitFlags<T, u32> {
     fn keep<F: Fn(T) -> bool>(&mut self, f: F) {
         for item in self.iter() {
             if !f(item) {
@@ -23,7 +42,27 @@ impl<T: BitFlag> BitFlagExt<T> for BitFlags<T> {
     }
 
     fn sample(&self, rng: &mut SmallRng) -> T {
-        self.iter().nth(rng.gen_range(0..self.len())).unwrap()
+        self.nth(rng.gen_range(0..self.len()) as u32)
+    }
+
+    fn pick(&mut self, rng: &mut SmallRng) -> T {
+        let ret = self.sample(rng);
+        self.remove(ret);
+        ret
+    }
+}
+
+impl<T: BitFlag + RawBitFlags<Numeric = u64>> BitFlagExt<T> for BitFlags<T, u64> {
+    fn keep<F: Fn(T) -> bool>(&mut self, f: F) {
+        for item in self.iter() {
+            if !f(item) {
+                self.remove(item);
+            }
+        }
+    }
+
+    fn sample(&self, rng: &mut SmallRng) -> T {
+        self.nth(rng.gen_range(0..self.len()) as u32)
     }
 
     fn pick(&mut self, rng: &mut SmallRng) -> T {

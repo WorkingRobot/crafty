@@ -7,6 +7,7 @@ mod action;
 mod action_set;
 mod craft_context;
 mod craft_state;
+mod intrinsics;
 mod player;
 mod recipe;
 mod simulator;
