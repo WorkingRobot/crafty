@@ -1,20 +1,23 @@
 use crate::{Action, ActionSet, Player, Recipe};
 
 #[derive(Debug, Clone)]
-pub struct CraftContext {
+pub struct Input {
     pub player_job_level: u8,
     pub recipe_job_level: u8,
     /// Multiply by synthesis action efficiency for increase in progress
     pub progress_factor: f32,
     /// Multiply by touch action efficiency for increase in quality
     pub quality_factor: f32,
-    pub step_max: u8,
+    pub action_max: u8,
     pub progress_target: u32,
     pub starting_quality: u32,
     pub quality_target: u32,
     pub durability_max: i8,
     pub cp_max: u32,
     pub is_expert: bool,
+    pub can_use_manipulation: bool,
+    pub is_specialist: bool,
+    pub has_splendorous_tool: bool,
     pub action_pool: ActionSet,
 }
 
@@ -25,7 +28,7 @@ pub struct CraftOptions {
     pub quality_target: Option<u32>,
 }
 
-impl CraftContext {
+impl Input {
     #[allow(clippy::cast_precision_loss)]
     fn factors(player: &Player, recipe: &Recipe) -> (f32, f32) {
         // https://github.com/ffxiv-teamcraft/simulator/blob/72f4a6037baa3cd7cd78dfe34207283b824881a2/src/model/actions/crafting-action.ts#L176
@@ -47,29 +50,15 @@ impl CraftContext {
     }
 
     fn determine_action_pool(player: &Player, recipe: &Recipe) -> ActionSet {
-        let mut pool = ActionSet::new();
+        let mut pool = ActionSet::default();
 
-        for action in Action::ACTIONS {
-            let attrs = action.attributes();
-            if player.level >= attrs.level && player.cp >= attrs.cp_cost.unwrap_or(0) {
+        for action in Action::VALUES {
+            if player.level >= action.level() {
                 if action == &Action::TrainedEye && player.level.saturating_sub(recipe.level) < 10 {
                     continue;
                 }
 
                 pool.set(*action);
-            }
-        }
-
-        {
-            use Action::*;
-            if pool.contains(BasicSynthesisTraited) && pool.contains(BasicSynthesis) {
-                pool.unset(BasicSynthesis);
-            }
-            if pool.contains(CarefulSynthesisTraited) && pool.contains(CarefulSynthesis) {
-                pool.unset(CarefulSynthesis);
-            }
-            if pool.contains(GroundworkTraited) && pool.contains(Groundwork) {
-                pool.unset(Groundwork);
             }
         }
 
@@ -83,13 +72,16 @@ impl CraftContext {
             recipe_job_level: recipe.level,
             progress_factor,
             quality_factor,
-            step_max: options.max_steps,
+            action_max: options.max_steps,
             progress_target: recipe.progress_max,
             starting_quality: options.starting_quality.unwrap_or(0),
             quality_target: options.quality_target.unwrap_or(recipe.quality_max),
             durability_max: recipe.durability_max,
             cp_max: player.cp,
             is_expert: recipe.is_expert,
+            can_use_manipulation: player.can_use_manipulation,
+            has_splendorous_tool: player.has_splendorous_tool,
+            is_specialist: player.is_specialist,
             action_pool: Self::determine_action_pool(player, recipe),
         }
     }

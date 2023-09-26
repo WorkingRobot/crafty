@@ -1,7 +1,6 @@
+use crate::{intrinsics, Action};
 use enum_indexing::EnumIndexing;
 use rand::{rngs::SmallRng, Rng};
-
-use crate::{intrinsics, Action};
 
 #[derive(Debug, Default, Clone)]
 pub struct ActionSet(u32);
@@ -28,12 +27,8 @@ impl ActionSet {
         self.unset_bit(Self::bit_from_action(action));
     }
 
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     pub fn from_vec(actions: &Vec<Action>) -> Self {
-        let mut instance = Self::new();
+        let mut instance = Self::default();
 
         for action in actions {
             instance.set(*action);
@@ -99,7 +94,7 @@ impl ActionSet {
     pub fn to_vec(&self) -> Vec<Action> {
         let mut actions = vec![];
 
-        for action in Action::ACTIONS {
+        for action in Action::VALUES {
             if self.contains(*action) {
                 actions.push(*action);
             }
@@ -117,7 +112,7 @@ mod tests {
 
     #[test]
     fn set_and_unset_works() {
-        let mut set = ActionSet::new();
+        let mut set = ActionSet::default();
 
         set.set(BasicTouch);
         set.set(BasicSynthesis);
@@ -130,7 +125,7 @@ mod tests {
 
     #[test]
     fn keep_works() {
-        let mut set = ActionSet::new();
+        let mut set = ActionSet::default();
         set.set(BasicTouch);
         set.set(BasicSynthesis);
         set.set(GreatStrides);
@@ -144,13 +139,13 @@ mod tests {
 
     #[test]
     fn random_index_works() {
-        let mut set = ActionSet::new();
+        let mut set = ActionSet::default();
         set.set(BasicTouch);
         set.set(BasicSynthesis);
         set.set(GreatStrides);
         set.set(TrainedFinesse);
 
-        let mut counts = vec![0; Action::ACTIONS.len()];
+        let mut counts = vec![0; Action::VALUES.len()];
         let mut rng = SmallRng::seed_from_u64(1);
         for _ in 0..100 {
             let random_index = set.random_index(&mut rng);

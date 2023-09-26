@@ -1,9 +1,9 @@
-use crafty::{Action, CraftContext, CraftOptions, Player, Recipe, SearchOptions, Simulator};
+use crafty::{Action, CraftOptions, Input, Player, Recipe, SearchOptions, Solver};
 use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion};
 use std::time::Duration;
 use Action::*;
 
-fn setup_sim(rng_seed: Option<u32>) -> (CraftContext, SearchOptions) {
+fn setup_sim(rng_seed: Option<u32>) -> (Input, SearchOptions) {
     let recipe = Recipe {
         rlvl: 560,
         level: 90,
@@ -22,7 +22,7 @@ fn setup_sim(rng_seed: Option<u32>) -> (CraftContext, SearchOptions) {
         max_steps: 15,
         ..Default::default()
     };
-    let context = CraftContext::new(&player, &recipe, craft_options);
+    let context = Input::new(&player, &recipe, craft_options);
     let options = SearchOptions {
         iterations: 50_000,
         rng_seed,
@@ -36,7 +36,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter_batched(
             || setup_sim(None),
             |(context, _)| {
-                Simulator::simulate(&context, black_box(ROTATION_1.to_vec()));
+                Solver::simulate(&context, black_box(ROTATION_1.to_vec()));
             },
             BatchSize::SmallInput,
         )
@@ -51,7 +51,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             b.iter_batched(
                 || setup_sim(Some(seed)),
                 |(context, options)| {
-                    Simulator::search_oneshot(&context, black_box(vec![]), options);
+                    Solver::search_oneshot(&context, black_box(vec![]), options);
                 },
                 BatchSize::SmallInput,
             )
